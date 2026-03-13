@@ -1,0 +1,55 @@
+CREATE TABLE Items ( ItemId INT PRIMARY KEY,ItemName VARCHAR(100),Category VARCHAR(50),Price DECIMAL(10,2),InStock INT CHECK (InStock >= 0));
+CREATE TABLE Customers1 (CustId INT PRIMARY KEY, CustName VARCHAR(100), Address VARCHAR(200), State VARCHAR(50));
+CREATE TABLE Orders1 (
+OrderId INT PRIMARY KEY,ItemId INT, CustId INT, Quantity INT,
+OrderDate DATE,FOREIGN KEY (ItemId) REFERENCES Items, FOREIGN KEY (CustId) REFERENCES Customers1);
+CREATE TABLE Delivery (  DeliveryId INT PRIMARY KEY,CustId INT,OrderId INT,FOREIGN KEY (CustId) REFERENCES Customers1,FOREIGN KEY (OrderId) REFERENCES Orders);
+INSERT INTO Items VALUES (1,'Samsung Galaxy S4','Mobile',6000,10);
+INSERT INTO Items VALUES (2,'iPhone 11','Mobile',7000,8);
+INSERT INTO Items VALUES (3,'Dell Laptop','Laptop',5500,5);
+INSERT INTO Items VALUES (4,'HP Printer','Electronics',3000,7);
+INSERT INTO Items VALUES (5,'Sony Headphones','Accessories',2000,15);
+INSERT INTO Customers1 VALUES (101,'John','New York','NY');
+INSERT INTO Customers1 VALUES (102,'Mickey','California','CA');
+INSERT INTO Customers1 VALUES (103,'James','Texas','TX');
+INSERT INTO Customers1 VALUES (104,'Alice','Florida','FL');
+INSERT INTO Customers1 VALUES (105,'Robert','Nevada','NV');
+INSERT INTO Orders1 VALUES (201,1,101,1,TO_DATE('2016-02-10','YYYY-MM-DD'));
+INSERT INTO Orders1 VALUES (202,2,102,1,TO_DATE('2017-03-12','YYYY-MM-DD'));
+INSERT INTO Orders1 VALUES (203,3,103,2,TO_DATE('2014-05-15','YYYY-MM-DD'));
+INSERT INTO Orders1 VALUES (204,4,104,1,TO_DATE('2018-07-19','YYYY-MM-DD'));
+INSERT INTO Orders1 VALUES (205,5,102,3,TO_DATE('2019-09-10','YYYY-MM-DD'));
+INSERT INTO Delivery VALUES (301,101,201);
+INSERT INTO Delivery VALUES (302,102,202);
+INSERT INTO Delivery VALUES (303,103,203);
+drop table Delivery;
+CREATE TABLE Delivery (  DeliveryId INT PRIMARY KEY,CustId INT,OrderId INT,FOREIGN KEY (CustId) REFERENCES Customers1,FOREIGN KEY (OrderId) REFERENCES Orders1);
+INSERT INTO Delivery VALUES (301,101,201);
+INSERT INTO Delivery VALUES (302,102,202);
+INSERT INTO Delivery VALUES (303,103,203);
+SELECT DISTINCT C.*
+FROM Customers1 C
+JOIN Orders1 O ON C.CustId = O.CustId;
+SELECT DISTINCT C.*
+FROM Customers1 C
+JOIN Delivery D ON C.CustId = D.CustId;
+SELECT C.CustName, O.OrderDate
+FROM Customers1 C
+JOIN Orders1 O ON C.CustId = O.CustId
+WHERE C.CustName LIKE 'J%';
+SELECT I.ItemName, I.Price
+FROM Items I
+JOIN Orders1 O ON I.ItemId = O.ItemId
+JOIN Customers1 C ON O.CustId = C.CustId
+WHERE C.CustName = 'Mickey';
+
+SELECT DISTINCT C.*
+FROM Customers1 C
+JOIN Orders1 O ON C.CustId = O.CustId
+WHERE O.OrderDate > TO_DATE('01-JAN-2015','DD-MON-YYYY')
+AND O.OrderId NOT IN (SELECT OrderId FROM Delivery);
+SELECT ItemId FROM Orders1
+UNION
+SELECT ItemId
+FROM Orders1
+WHERE OrderId NOT IN (SELECT OrderId FROM Delivery);
